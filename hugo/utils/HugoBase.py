@@ -1,14 +1,1 @@
-import os
-
-from settings import HUGO_PATH
-
-
-class HugoBase(object):
-    def __init__(self, blog_name):
-        self.hugo_path = HUGO_PATH
-        self.blog_name = blog_name
-
-    def create_post(self):
-        cmd = "hugo new post/%s/index.md" % self.blog_name
-        os.chdir(self.hugo_path)
-        os.system(cmd)
+import osfrom settings import HUGO_PATHclass HugoBase(object):    def __init__(self):        self.hugo_path = HUGO_PATH    def gen_public(self):        os.chdir(self.hugo_path)        os.system("hugo")        os.system("cp -rf ./public/* ../public")    def update(self):        os.chdir("../public")        os.system("git add .")        os.system("git commit -m 'init'")        os.system("git push -u origin main")hugo = HugoBase()hugo.gen_public()hugo.update()

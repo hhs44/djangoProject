@@ -1,10 +1,11 @@
-import os
+﻿import os
+import re
 
 from django.db import models
 # Create your models here.
 from mdeditor.fields import MDTextField
 
-from hugo.utils.settings import POST_PATH, ABOUT_PATH, ABOUT_TOP
+from hugo.utils.settings import POST_PATH, ABOUT_PATH, ABOUT_TOP, IMAGE_PATH, POST_PAGE_PATH
 
 
 class Base(models.Model):
@@ -31,7 +32,13 @@ class Blog(Base):
     def save(self, *args, **kwargs):
         if not os.path.exists(POST_PATH + "/" + self.title):
             os.makedirs(POST_PATH + "/" + self.title)
-        with open("%s/%s/index.md" % (POST_PATH, self.title), mode="w", encoding='utf-8') as f:
+        image_re = r'![[].*?[]][(](.*?)[)]'
+        ls = re.findall(image_re, self.content, re.M)
+        for i in ls:
+            image_name = i.split("\\")[-1]
+            os.system("xcopy  %s %s" % (IMAGE_PATH + "\\" + image_name, POST_PATH + '\\"' + self.title+'"'))
+            self.content = self.content.replace(i, image_name)
+        with open("%s\\%s\\index.md" % (POST_PATH, self.title), mode="w", encoding='utf-8') as f:
             f.write('+++\ntitle="%s"\n' % self.title)
             f.write('description="%s"\n' % self.description)
             f.write('date="%s"\n' % self.date)
@@ -58,6 +65,12 @@ class About(Base):
         aliases = ""
         for i in self.aliases.split(","):
             aliases += " - %s\n" % i
+        image_re = r'![[].*?[]][(](.*?)[)]'
+        ls = re.findall(image_re, self.content, re.M)
+        for i in ls:
+            image_name = i.split("\\")[-1]
+            os.system("xcopy  %s %s" % (IMAGE_PATH + "\\" + image_name, POST_PAGE_PATH + "\\'" + self.title+"'"))
+            self.content = self.content.replace(i, image_name)
         with open(ABOUT_PATH, mode="w", encoding='utf-8') as f:
             f.write(ABOUT_TOP % (
                 self.title, self.description, self.date, aliases, self.md_date))

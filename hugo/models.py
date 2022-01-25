@@ -29,26 +29,35 @@ class Blog(Base):
     def __str__(self):
         return self.title
 
+    def cover(self, field):
+        tmp = ""
+        for i in field.split(","):
+            tmp += '"' + i + '",'
+        return tmp
+
     def save(self, *args, **kwargs):
+        categories = self.cover(self.categories)
+        tags = self.cover(self.tags)
+        content = self.content
         if not os.path.exists(POST_PATH + "/" + self.title):
             os.makedirs(POST_PATH + "/" + self.title)
         image_re = r'![[].*?[]][(](.*?)[)]'
         ls = re.findall(image_re, self.content, re.M)
         for i in ls:
             image_name = i.split("\\")[-1]
-            os.system("xcopy  %s %s" % (IMAGE_PATH + "\\" + image_name, POST_PATH + '\\"' + self.title+'"'))
-            self.content = self.content.replace(i, image_name)
+            os.system("xcopy /y %s %s" % (IMAGE_PATH + "\\" + image_name, POST_PATH + '\\"' + self.title + '"'))
+            content = self.content.replace(i, image_name)
         with open("%s\\%s\\index.md" % (POST_PATH, self.title), mode="w", encoding='utf-8') as f:
             f.write('+++\ntitle="%s"\n' % self.title)
             f.write('description="%s"\n' % self.description)
             f.write('date="%s"\n' % self.date)
             f.write('image="%s"\n' % self.image)
-            f.write('tags=[%s]\n' % self.tags)
-            f.write('categories=[%s]\n' % self.categories)
+            f.write('tags=[%s]\n' % tags)
+            f.write('categories=[%s]\n' % categories)
             f.write('series=[%s]\n' % self.series)
             f.write('aliases=[%s]\n' % self.aliases)
             f.write("+++\n")
-            f.write(self.content)
+            f.write(content)
         super(Blog, self).save(*args, **kwargs)
 
     class Meta:
@@ -62,6 +71,7 @@ class About(Base):
         return self.title
 
     def save(self, *args, **kwargs):
+        content = self.content
         aliases = ""
         for i in self.aliases.split(","):
             aliases += " - %s\n" % i
@@ -69,12 +79,12 @@ class About(Base):
         ls = re.findall(image_re, self.content, re.M)
         for i in ls:
             image_name = i.split("\\")[-1]
-            os.system("xcopy  %s %s" % (IMAGE_PATH + "\\" + image_name, POST_PAGE_PATH + "\\'" + self.title+"'"))
-            self.content = self.content.replace(i, image_name)
+            os.system("xcopy /y %s %s" % (IMAGE_PATH + "\\" + image_name, POST_PAGE_PATH + "\\'" + self.title + "'"))
+            content = self.content.replace(i, image_name)
         with open(ABOUT_PATH, mode="w", encoding='utf-8') as f:
             f.write(ABOUT_TOP % (
                 self.title, self.description, self.date, aliases, self.md_date))
-            f.write(self.content)
+            f.write(content)
         super(About, self).save(*args, **kwargs)
 
     class Meta:

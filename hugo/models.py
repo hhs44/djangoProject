@@ -39,9 +39,10 @@ class Blog(Base):
         categories = self.cover(self.categories)
         tags = self.cover(self.tags)
         content = self.content
-        os.system("xcopy /y %s %s" % (INDEX_IMAGE_PATH + "\\" + str(self.image), POST_PATH + '\\"' + self.title + '"'))
-        if not os.path.exists(POST_PATH + "/" + self.title):
-            os.makedirs(POST_PATH + "/" + self.title)
+        if not os.path.exists(POST_PATH + "\\" + self.title):
+            os.makedirs(POST_PATH + "\\" + self.title)
+        if self.image:
+            os.system("xcopy /y %s %s" % (INDEX_IMAGE_PATH + "\\" + str(self.image), POST_PATH + '\\"' + self.title + '"'))
         image_re = r'![\[].*?[]][(](.*?)[)]'
         ls = re.findall(image_re, self.content, re.M)
         for i in ls:
@@ -74,7 +75,8 @@ class About(Base):
 
     def save(self, *args, **kwargs):
         content = self.content
-        os.system("xcopy /y %s %s" % (INDEX_IMAGE_PATH + "\\" + str(self.image), POST_PATH + '\\"' + self.title + '"'))
+        if self.image:
+            os.system("xcopy /y %s %s" % (INDEX_IMAGE_PATH + "\\" + str(self.image), POST_PATH + '\\"' + self.title + '"'))
         aliases = ""
         for i in self.aliases.split(","):
             aliases += " - %s\n" % i
